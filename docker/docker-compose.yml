@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: pago_db
+      POSTGRES_USER: pago_user
+      POSTGRES_PASSWORD: pago_password
+    ports:
+      - "5435:5432"
+  
+  app:
+    build: 
+      context: ..
+      dockerfile: Dockerfile
+    environment:
+      - FLASK_CONTEXT=testing
+      - FLASK_APP=app:create_app
+      - TEST_DATABASE_URI=postgresql://pago_user:user_password@localhost:5432/pago_db
+    volumes:
+      - .:/app
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+
+  pgadmin:
+    container_name: pgadmin4_container2
+    image: dpage/pgadmin4:8
+    restart: always
+
+    environment:
+      PGADMIN_DEFAULT_EMAIL: guadaluc088@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: guada1234
+    ports:
+      - "5052:80"  # pgAdmin estará disponible en http://localhost:8080
+    depends_on:
+      - db
+
+    #networks:
+     # - mired    
