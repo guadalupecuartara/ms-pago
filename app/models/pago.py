@@ -12,6 +12,19 @@ class Pago(db.Model):
     def __repr__(self):
         return f'<Pago {self.id}>'
     
+    # Método para crear un nuevo pago
+    @classmethod
+    def crear_pago(Pago, producto_id, precio, medio_pago):
+        nuevo_pago = Pago(producto_id=producto_id, precio=precio, medio_pago=medio_pago)
+        db.session.add(nuevo_pago)
+        db.session.commit()
+        return nuevo_pago
+    
+    # Método para obtener todos los pagos
+    @classmethod
+    def obtener_todos_los_pagos(Pago):
+        return Pago.query.all()
+    
     @validates('precio')
     def validate_precio(self, key, value):
         """Valida que el precio no sea negativo."""

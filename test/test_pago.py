@@ -17,103 +17,46 @@ class PagoTestCase(unittest.TestCase):
         db.session.remove()
         db.drop_all()
         self.app_context.pop()
-    
+        
     def test_create_pago(self):
-        """Prueba la creación de un nuevo pago."""
-        # Suponiendo que tienes un modelo `Pago`
-        nuevo_pago = {
-            'producto_id': 1,
-            'precio': 100,
-            'medio_pago': 'tarjeta'
-        }
+         #"""Prueba la creación de un pago exitosamente."""
+        nuevo_pago = Pago.crear_pago(producto_id=1, precio=100.0, medio_pago='Tarjeta')
+        self.assertIsNotNone(nuevo_pago)
+        self.assertEqual(nuevo_pago.producto_id, 1)
+        self.assertEqual(nuevo_pago.precio, 100.0)
+        self.assertEqual(nuevo_pago.medio_pago, 'Tarjeta')
 
-         # Inserta el pago en la base de datos usando SQL crudo
-        db.session.execute(
-            text("INSERT INTO pago (producto_id, precio, medio_pago) VALUES (:producto_id, :precio, :medio_pago)"),
-            nuevo_pago
-        )
-        db.session.commit()
+        # Verificar que esté en la base de datos
+        pagos_en_db = Pago.obtener_todos_los_pagos()
+        self.assertEqual(len(pagos_en_db), 1)
+  
+    def test_crear_pago_precio_negativo(self):
+        """Prueba la creación de un pago con un precio negativo (debería fallar)."""
+        with self.assertRaises(ValueError):
+            Pago.crear_pago(producto_id=1, precio=-50.0, medio_pago='Tarjeta')
 
-        # Verifica que el pago se haya creado correctamente
-        result = db.session.execute(text("SELECT * FROM pago WHERE producto_id = 1")).fetchone()
-        self.assertIsNotNone(result)
-        self.assertEqual(result.producto_id, 1)
-        self.assertEqual(result.precio, 100.0)
-        self.assertEqual(result.medio_pago, 'tarjeta')
+        # Verificar que no haya ningún pago creado
+        pagos_en_db = Pago.obtener_todos_los_pagos()
+        self.assertEqual(len(pagos_en_db), 0)
 
-        
-    def test_invalid_pago(self):
-        """Prueba la creación de un pago con datos inválidos."""
-        with self.assertRaises(ValueError):  # Espera que se lance ValueError por el precio negativo
-            nuevo_pago = Pago(producto_id=1, precio=-50.0, medio_pago='tarjeta')
-            db.session.add(nuevo_pago)
-            db.session.commit()
-        
-    
+    def test_crear_pago_medio_pago_largo(self):
+        """Prueba la creación de un pago con un medio de pago que excede los 50 caracteres (debería fallar)."""
+        with self.assertRaises(ValueError):
+            Pago.crear_pago(producto_id=1, precio=100.0, medio_pago='T' * 51)  # Más de 50 caracteres
 
+        # Verificar que no haya ningún pago creado
+        pagos_en_db = Pago.obtener_todos_los_pagos()
+        self.assertEqual(len(pagos_en_db), 0)
+
+    def test_obtener_todos_los_pagos(self):
+        """Prueba la obtención de todos los pagos."""
+        Pago.crear_pago(producto_id=1, precio=100.0, medio_pago='Tarjeta')
+        Pago.crear_pago(producto_id=2, precio=200.0, medio_pago='Efectivo')
+
+        pagos = Pago.obtener_todos_los_pagos()
+        self.assertEqual(len(pagos), 2)
+        self.assertEqual(pagos[0].producto_id, 1)
+        self.assertEqual(pagos[1].producto_id, 2)
+   
 if __name__ == '__main__':
     unittest.main()
-
-
-"""
-import os
-import unittest
-from sqlalchemy import text
-from app import create_app, db
-
-class PagoTestCase(unittest.TestCase):
-
-    def setUp(self):
-        os.environ['FLASK_CONTEXT'] = 'testing'
-        self.app = create_app()
-        self.app_context = self.app.app_context()
-        self.app_context.push()
-        db.create_all()
-
-    def tearDown(self):
-        db.session.remove()
-        db.drop_all()
-        self.app_context.pop()
-    
-    def test_create_pago(self):
-        Prueba la creación de un nuevo pago.
-        # Suponiendo que tienes un modelo `Pago`
-        nuevo_pago = {
-            'producto_id': 1,
-            'precio': 100,
-            'medio_pago': 'tarjeta'
-        }
-
-        # Inserta el pago en la base de datos
-        db.session.execute(
-            text("INSERT INTO pago (producto_id, precio, medio_pago) VALUES (:producto_id, :precio, :medio_pago)"),
-            nuevo_pago
-        )
-        db.session.commit()
-
-        # Verifica que el pago se haya creado correctamente
-        result = db.session.execute(text("SELECT * FROM pago WHERE producto_id = 1")).fetchone()
-        self.assertIsNotNone(result)
-        self.assertEqual(result.producto_id, 1)
-        self.assertEqual(result.precio, 100)
-        self.assertEqual(result.medio_pago, 'tarjeta')
-
-    def test_invalid_pago(self):
-        Prueba la creación de un pago con datos inválidos.
-        # Suponiendo que `precio` no puede ser negativo
-        pago_invalido = {
-            'producto_id': 1,
-            'precio': -50.0,  # Precio negativo debería fallar
-            'medio_pago': 'tarjeta'
-        }
-
-        with self.assertRaises(Exception):  # Ajusta según cómo manejes los errores
-            db.session.execute(
-                text("INSERT INTO pago (producto_id, precio, medio_pago) VALUES (:producto_id, :precio, :medio_pago)"),
-                pago_invalido
-            )
-            db.session.commit()
-
-if __name__ == '__main__':
-    unittest.main()
-"""
