@@ -11,8 +11,12 @@ class PagoRepository:
         return nuevo_pago
 
     @staticmethod
-    def obtener_pago_por_id(pago_id): #find_by_id
-        return Pago.query.get(pago_id)
+    def obtener_pago_por_producto_id(producto_id):  # Nuevo método para obtener pago por producto_id
+        return Pago.query.filter_by(producto_id=producto_id).first()  # Obtiene el primer pago que coincide
+    
+    #@staticmethod
+    #def obtener_pago_por_id(pago_id): #find_by_id
+     #   return Pago.query.get(pago_id)
     
     @staticmethod
     def obtener_todos_los_pagos():  #find_all
