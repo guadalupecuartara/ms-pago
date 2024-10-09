@@ -1,5 +1,6 @@
 from app import db
 from sqlalchemy.orm import validates
+from datetime import datetime
 
 class Pago(db.Model):
     __tablename__ = 'pago'
@@ -8,22 +9,15 @@ class Pago(db.Model):
     producto_id = db.Column(db.Integer, nullable=False)
     precio = db.Column(db.Float, nullable=False)
     medio_pago = db.Column(db.String(50), nullable=False)
+    fecha_pago = db.Column(db.DateTime, default=datetime.utcnow)
 
+    def __init__(self, producto_id, precio, medio_pago):
+        self.producto_id = producto_id
+        self.precio = precio
+        self.medio_pago = medio_pago
+        
     def __repr__(self):
         return f'<Pago {self.id}>'
-    
-    # Método para crear un nuevo pago
-    @classmethod
-    def crear_pago(Pago, producto_id, precio, medio_pago):
-        nuevo_pago = Pago(producto_id=producto_id, precio=precio, medio_pago=medio_pago)
-        db.session.add(nuevo_pago)
-        db.session.commit()
-        return nuevo_pago
-    
-    # Método para obtener todos los pagos
-    @classmethod
-    def obtener_todos_los_pagos(Pago):
-        return Pago.query.all()
     
     @validates('precio')
     def validate_precio(self, key, value):
