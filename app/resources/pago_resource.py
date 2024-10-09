@@ -50,21 +50,3 @@ def obtener_todos_los_pagos():
         "precio": pago.precio,
         "medio_pago": pago.medio_pago
     } for pago in pagos]}), 200
-    """
-    data = request.json
-    if data is None:
-        return "Invalid input", 400
-    producto_id = data.get("producto_id")
-    precio = data.get("precio")
-    medio_pago = data.get("medio_pago")
-    nuevo_pago = pago_service.crear_pago(producto_id, precio, medio_pago)
-    return {"id": nuevo_pago.id}, 201
-
-@pago_bp.route("/pago/<int:producto_id>", methods=["GET"])
-def obtener_pago(producto_id):
-    pago = pago_service.obtener_pago(producto_id)
-    if pago is None:
-        return "Pago no encontrado", 404
-    return {"producto_id": pago.producto_id, "precio": pago.precio, "medio_pago": pago.medio_pago}, 200
-    
-    """
